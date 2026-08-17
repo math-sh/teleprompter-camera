@@ -1,17 +1,21 @@
 {
   "expo": {
-    "name": "teleprompther",
+    "name": "Teleprompter",
     "slug": "teleprompther",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false,
+      "bundleIdentifier": "com.teleprompther.app",
+      "infoPlist": {
+        "CADisableMinimumFrameDurationOnPhone": true
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#0A0A0B",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -20,6 +24,24 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "O Teleprompter usa a câmera para gravar seus vídeos.",
+          "microphonePermission": "O Teleprompter usa o microfone para gravar o áudio dos seus vídeos.",
+          "recordAudioAndroid": true
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "O Teleprompter salva os vídeos gravados na sua galeria.",
+          "savePhotosPermission": "O Teleprompter salva os vídeos gravados na sua galeria.",
+          "isAccessMediaLocationEnabled": false
+        }
+      ]
+    ]
   }
 }
