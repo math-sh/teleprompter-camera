@@ -41,7 +41,8 @@
           "savePhotosPermission": "O Teleprompter salva os vídeos gravados na sua galeria.",
           "isAccessMediaLocationEnabled": false
         }
-      ]
+      ],
+      "expo-status-bar"
     ]
   }
 }
