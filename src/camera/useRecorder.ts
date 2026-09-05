@@ -1,6 +1,6 @@
 import type { CameraView } from 'expo-camera';
 import { File } from 'expo-file-system';
-import * as MediaLibrary from 'expo-media-library';
+import { Asset } from 'expo-media-library';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 /** Teto de segurança por tomada. Evita encher o disco num take esquecido. */
@@ -109,13 +109,16 @@ export function useRecorder(
 /**
  * Move a gravação do cache para a galeria e limpa o original.
  *
- * `saveToLibraryAsync` grava direto no rolo da câmera sem devolver um objeto
- * de asset — que é tudo o que este app precisa, e por isso a permissão pedida
- * é `writeOnly`. (No SDK 57 esta API dá lugar a `Asset.create`, mas o Expo Go
- * da App Store ainda está no SDK 54.)
+ * `Asset.create` é o sucessor do `saveToLibraryAsync`, que desde o SDK 56
+ * lança em tempo de execução quando importado da entrada principal do módulo.
+ *
+ * A troca não custa a permissão `writeOnly` pedida no App.tsx: o nativo de
+ * `create` checa `checkIfWritePermissionGranted` — e não a variante de leitura
+ * e escrita que `Asset.delete` exige. O `Asset` devolvido é descartado de
+ * propósito; o app só precisa que o vídeo entre no rolo da câmera.
  */
 async function persistToLibrary(uri: string): Promise<void> {
-  await MediaLibrary.saveToLibraryAsync(uri);
+  await Asset.create(uri);
 
   // Best-effort: o vídeo já está salvo na galeria, então falhar em apagar o
   // arquivo de cache não é motivo para reportar erro ao usuário. O iOS limpa
