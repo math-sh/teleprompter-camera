@@ -27,6 +27,13 @@ type Props = {
   onToggleScroll: () => void;
   onRewind: () => void;
 
+  onToggleFacing: () => void;
+  /**
+   * Falso enquanto há tomada em andamento — trocar de câmera reconfigura a
+   * sessão de captura e encerraria a gravação. Ver o docblock do CameraLayer.
+   */
+  canToggleFacing: boolean;
+
   onEditScript: () => void;
 };
 
@@ -45,6 +52,8 @@ export function Controls({
   isScrolling,
   onToggleScroll,
   onRewind,
+  onToggleFacing,
+  canToggleFacing,
   onEditScript,
 }: Props) {
   return (
@@ -93,16 +102,35 @@ export function Controls({
               </Text>
             </View>
           ) : (
-            <Pressable
-              onPress={onEditScript}
-              hitSlop={10}
-              style={({ pressed }) => [
-                styles.secondary,
-                pressed && styles.secondaryPressed,
-              ]}
-            >
-              <Text style={styles.secondaryText}>Roteiro</Text>
-            </Pressable>
+            <View style={styles.scriptGroup}>
+              <Pressable
+                onPress={onEditScript}
+                hitSlop={10}
+                style={({ pressed }) => [
+                  styles.secondary,
+                  pressed && styles.secondaryPressed,
+                ]}
+              >
+                <Text style={styles.secondaryText}>Roteiro</Text>
+              </Pressable>
+
+              {/* Trocar entre a frontal e a traseira. Vive neste slot porque
+                  o cronômetro o ocupa durante a gravação — que é exatamente
+                  quando a troca é proibida. O botão some em vez de ficar na
+                  tela pedindo um toque que não faz nada. */}
+              <Pressable
+                onPress={onToggleFacing}
+                disabled={!canToggleFacing}
+                hitSlop={10}
+                style={({ pressed }) => [
+                  styles.iconButton,
+                  pressed && styles.iconButtonPressed,
+                  !canToggleFacing && styles.iconButtonDisabled,
+                ]}
+              >
+                <Text style={styles.iconGlyph}>⇄</Text>
+              </Pressable>
+            </View>
           )}
         </View>
 
@@ -236,6 +264,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
+  // Pílula do roteiro + troca de câmera. O gap é menor que o do playbackGroup
+  // porque este slot carrega uma pílula de texto junto: num aparelho estreito
+  // (SE, 375pt) sobram ~135pt aqui e o conteúdo mede quase isso.
+  scriptGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   playbackGroup: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -251,6 +287,10 @@ const styles = StyleSheet.create({
   },
   iconButtonPressed: {
     backgroundColor: 'rgba(255,255,255,0.24)',
+  },
+  // Mesma opacidade do recordRingDisabled: um só vocabulário para "agora não".
+  iconButtonDisabled: {
+    opacity: 0.4,
   },
   iconGlyph: {
     color: colors.text,

@@ -1,4 +1,4 @@
-import type { CameraView } from 'expo-camera';
+import type { CameraType, CameraView } from 'expo-camera';
 import { useKeepAwake } from 'expo-keep-awake';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -33,6 +33,9 @@ export function PrompterScreen() {
   const cameraRef = useRef<CameraView | null>(null);
 
   const [script, setScript] = useState(DEFAULT_SCRIPT);
+  // Frontal é o padrão: ler o roteiro olhando para a lente é o caso principal.
+  // A traseira serve para narrar em off enquanto se filma outra coisa.
+  const [facing, setFacing] = useState<CameraType>('front');
   const [fontSize, setFontSize] = useState(36);
   const [durationSec, setDurationSec] = useState(DEFAULT_DURATION_SEC);
   const [contentHeight, setContentHeight] = useState(0);
@@ -139,6 +142,17 @@ export function PrompterScreen() {
     setIsScrolling(false);
   }, [engine]);
 
+  const handleToggleFacing = useCallback(() => {
+    setFacing((current) => (current === 'front' ? 'back' : 'front'));
+  }, []);
+
+  // Trocar de câmera reconfigura a sessão de captura, o que encerra a gravação
+  // em andamento (ver o docblock do CameraLayer). Barrar durante a contagem
+  // regressiva também não é excesso de zelo: ela dura 2,7s e o `recordAsync`
+  // dispara no tique zero, então um toque no último instante deixaria a troca
+  // de device em voo bem na hora de começar a gravar.
+  const canToggleFacing = countdown === null && recorder.status === 'idle';
+
   const handleSaveScript = useCallback((next: string) => {
     setScript(next);
     setEditorVisible(false);
@@ -161,6 +175,7 @@ export function PrompterScreen() {
       <CameraLayer
         ref={cameraRef}
         active={!editorVisible}
+        facing={facing}
         onReady={() => {}}
         onError={handleCameraError}
       />
@@ -198,6 +213,8 @@ export function PrompterScreen() {
         isScrolling={isScrolling}
         onToggleScroll={handleToggleScroll}
         onRewind={handleRewind}
+        onToggleFacing={handleToggleFacing}
+        canToggleFacing={canToggleFacing}
         onEditScript={() => setEditorVisible(true)}
       />
 
